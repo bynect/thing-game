@@ -3,7 +3,10 @@
 #include <random>
 
 #include "game.hpp"
+#include "map.hpp"
 #include "panic.hpp"
+#include "thing.hpp"
+#include "vec2.hpp"
 
 Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : window_width(width), window_height(height), rand_generator(rand_device())
 {
@@ -23,8 +26,15 @@ Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : 
 		panic();
 	}
 
-	map.init(renderer);
+	camera_origin = {0, 0};
+	camera_size = {16 * 2, 9 * 2};
+
+	tile_size = width / camera_size.x;
+
+	map.init(renderer, tile_size);
 	map.load_scheme(scheme_1);
+
+	thing.init(renderer, tile_size);
 }
 
 Game::~Game()
@@ -58,14 +68,67 @@ void Game::events()
 
 void Game::update(float delta)
 {
+	thing.update(delta);
+
+	if (thing.pos.x < 0)
+	{
+		thing.pos.x = 0;
+		thing.vel = {0, 0};
+	}
+
+	if (thing.pos.y < 0)
+	{
+		thing.pos.y = 0;
+		thing.vel = {0, 0};
+	}
+
+	if ((thing.pos.x + thing.size) >= MAP_WIDTH * tile_size)
+	{
+		thing.pos.x = MAP_WIDTH * tile_size - thing.size;
+		thing.vel = {0, 0};
+	}
+
+	if ((thing.pos.y + thing.size) >= MAP_HEIGHT * tile_size)
+	{
+		thing.pos.y = MAP_HEIGHT * tile_size - thing.size - 100;
+		thing.vel = {0, 0};
+	}
 }
 
 void Game::render()
 {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
+	//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	//SDL_RenderClear(renderer);
 
-	map.render(renderer);
+	Vec2<int> camera_from = {camera_origin.x, camera_origin.y};
+	Vec2<int> camera_to = {camera_from.x + camera_size.x, camera_from.y + camera_size.y};
+	map.render(renderer, camera_from, camera_to);
+
+	thing.render(renderer, camera_origin * tile_size);
 
 	SDL_RenderPresent(renderer);
+}
+
+void Game::camera_vertical(int tiles)
+{
+	int new_origin = camera_origin.y + tiles;
+
+//	std::cout << "vertical(tiles: " << tiles << ", origin: " << camera_origin << ", new_origin_y: " << new_origin << ")" << std::endl;
+
+	if (new_origin >= 0 && (new_origin + camera_size.y) < MAP_HEIGHT)
+	{
+		camera_origin.y = new_origin;
+	}
+}
+
+void Game::camera_horizontal(int tiles)
+{
+	int new_origin = camera_origin.x + tiles;
+
+//	std::cout << "horizontal(tiles: " << tiles << ", origin: " << camera_origin << ", new_origin_x: " << new_origin << ")" << std::endl;
+
+	if (new_origin >= 0 && (new_origin + camera_size.x) < MAP_WIDTH)
+	{
+		camera_origin.x = new_origin;
+	}
 }

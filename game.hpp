@@ -1,13 +1,16 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_image.h>
 #include <memory>
 #include <random>
+#include <utility>
 
 #include "panic.hpp"
 #include "map.hpp"
+#include "vec2.hpp"
+#include "texture.hpp"
+#include "thing.hpp"
 
 class Game {
 public:
@@ -22,17 +25,14 @@ public:
 
 	bool running() { return _running; }
 
-	static void render_texture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst)
-	{
-		if (SDL_RenderCopy(renderer, texture, src, dst) < 0)
-		{
-			panic(SDL_GetError());
-		}
-	}
+	void camera_vertical(int tiles);
+
+	void camera_horizontal(int tiles);
 
 private:
 	int window_width;
 	int window_height;
+	int tile_size;
 	bool _running = true;
 
 	SDL_Window *window;
@@ -42,9 +42,8 @@ private:
 	std::mt19937 rand_generator;
 
 	Map map;
+	Vec2<int> camera_origin;
+	Vec2<int> camera_size;
 
-	void render_texture(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst)
-	{
-		render_texture(renderer, texture, src, dst);
-	}
+	Thing thing;
 };
