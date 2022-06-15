@@ -54,9 +54,67 @@ void Game::events()
     			_running = false;
     			break;
 
-			case SDL_KEYUP:
-				if (event.key.keysym.sym == ' ')
+			case SDL_KEYDOWN:
+				switch (event.key.keysym.sym)
 				{
+					case 'w':
+						thing.increase_vel({0, -0.5});
+						break;
+
+					case 'a':
+						thing.increase_vel({-0.5, 0});
+						break;
+
+					case 's':
+						thing.increase_vel({0, 0.5});
+						break;
+
+					case 'd':
+						thing.increase_vel({0.5, 0});
+						break;
+
+					default:
+						break;
+				}
+				break;
+
+			case SDL_KEYUP:
+				switch (event.key.keysym.sym)
+				{
+					case 'w':
+						thing.increase_vel({0, 0.5});
+						break;
+
+					case 'a':
+						thing.increase_vel({0.5, 0});
+						break;
+
+					case 's':
+						thing.increase_vel({0, -0.5});
+						break;
+
+					case 'd':
+						thing.increase_vel({-0.5, 0});
+						break;
+
+					case SDLK_UP:
+						camera_vertical(-1);
+						break;
+
+					case SDLK_LEFT:
+						camera_horizontal(-1);
+						break;
+
+					case SDLK_DOWN:
+						camera_vertical(1);
+						break;
+
+					case SDLK_RIGHT:
+						camera_horizontal(1);
+						break;
+
+					default:
+						break;
 				}
 				break;
 
