@@ -4,7 +4,7 @@ CXXLIBS=-lSDL2 -lSDL2_image
 
 SRC=$(wildcard *.cpp)
 OBJ=$(patsubst %.cpp,%.o,$(SRC))
-EXE=game
+EXE=game.bin
 
 all: $(EXE)
 
