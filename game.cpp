@@ -1,3 +1,4 @@
+#include <SDL2/SDL_rect.h>
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <random>
@@ -141,17 +142,14 @@ void Game::update(float delta)
 
 	if (auto colliding = map.colliding(thing.collider))
 	{
-		std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
-
-	std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
+		//std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
+		//std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
 
 		thing.vel.y = 0;
 		thing.pos.y = colliding->collider.rect.y - colliding->collider.rect.h;
 		thing.on_ground = true;
 
 		friction_coeff = DIRT_FRICTION;
-//
-//		std::cout << "vel " << thing.vel << ", pos " << thing.pos << ", cx " << colliding->collider.rect.x << ", cy " << colliding->collider.rect.y << std::endl;
 	}
 
 	auto friction = friction_coeff * delta;
@@ -184,25 +182,44 @@ void Game::update(float delta)
 	}
 
 	if ((thing.pos.y + thing.size) >= MAP_HEIGHT * tile_size)
-	//if ((thing.pos.y + thing.size) >= window_height)//MAP_WIDTH * tile_size)
 	{
-		//thing.pos.y = window_height - thing.size;
 		thing.pos.y = (MAP_HEIGHT - 1) * tile_size - thing.size;
 		thing.vel = {0, 0};
 	}
+
+	//SDL_Rect camera_rect = {
+	//	.x = camera_origin.x,
+	//	.y = camera_origin.y,
+	//	.w = camera_size.x,
+	//	.h = camera_size.y,
+	//};
+
+	//if (!Collider::aabb(camera_rect, thing.collider.rect))
+	//{
+	//	if (camera_origin.y > thing.pos.y)
+	//	{
+	//		camera_vertical(-1);
+	//	}
+	//	else if (camera_origin.y < thing.pos.y)
+	//	{
+	//		camera_vertical(1);
+	//	}
+
+	//	if (camera_origin.x > thing.pos.x)
+	//	{
+	//		camera_horizontal(-1);
+	//	}
+	//	else if (camera_origin.x < thing.pos.x)
+	//	{
+	//		camera_horizontal(1);
+	//	}
+	//}
 }
 
 void Game::render()
 {
-	//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	//SDL_RenderClear(renderer);
-
-	Vec2<int> camera_from = {camera_origin.x, camera_origin.y};
-	Vec2<int> camera_to = {camera_from.x + camera_size.x, camera_from.y + camera_size.y};
-	map.render(renderer, camera_from, camera_to);
-
+	map.render(renderer, camera_origin, camera_origin + camera_size);
 	thing.render(renderer, camera_origin * tile_size);
-
 	SDL_RenderPresent(renderer);
 }
 

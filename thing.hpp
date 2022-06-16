@@ -46,8 +46,12 @@ public:
 		SDL_Rect dst = collider.rect;
 		dst.x -= displacement.x;
 		dst.y -= displacement.y;
+
 		SDL_RendererFlip flip = facing == F_RIGHT ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
 		render_texture(renderer, texture, NULL, &dst, 0, NULL, flip);
+
+		//std::cout << "displacement: " << displacement << std::endl;
+		//std::cout << "x: " << dst.x << " + y: " << dst.y << std::endl;
 	}
 
 	void increase_vel(Vec2<float> v)

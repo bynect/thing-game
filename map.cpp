@@ -55,19 +55,13 @@ void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
 	{
 		for (int column = from.x; column < to.x; column++)
 		{
-			//SDL_Rect dst = {
-			//	.x = (column - from.x) * tile_size,
-			//	.y = (row - from.y) * tile_size,
-			//	.w = tile_size,
-			//	.h = tile_size,
-			//};
-
 			auto &tile = tiles[row][column];
 			if (tile.material == M_VOID) continue;
 
-			tile.collider.rect.x = (column - from.x) * tile_size;
-			tile.collider.rect.y = (row - from.y) * tile_size;
-			render_texture(renderer, materials[tile.material], NULL, &tile.collider.rect);
+			SDL_Rect dst = tile.collider.rect;
+			dst.x -= from.x * tile_size;
+			dst.y -= from.y * tile_size;
+			render_texture(renderer, materials[tile.material], NULL, &dst);
 		}
 	}
 }
