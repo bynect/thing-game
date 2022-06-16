@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <random>
+#include <algorithm>
 
 #include "game.hpp"
 #include "map.hpp"
@@ -135,6 +136,34 @@ void Game::events()
 void Game::update(float delta)
 {
 	thing.update(delta);
+
+	float friction_coeff = AIR_FRICTION;
+
+	if (auto colliding = map.colliding(thing.collider))
+	{
+		std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
+
+	std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
+
+		thing.vel.y = 0;
+		thing.pos.y = colliding->collider.rect.y - colliding->collider.rect.h;
+		thing.on_ground = true;
+
+		friction_coeff = DIRT_FRICTION;
+//
+//		std::cout << "vel " << thing.vel << ", pos " << thing.pos << ", cx " << colliding->collider.rect.x << ", cy " << colliding->collider.rect.y << std::endl;
+	}
+
+	auto friction = friction_coeff * delta;
+	if (thing.vel.x > 0)
+	{
+		thing.vel.x = std::max(0.0f, thing.vel.x - friction);
+	}
+	else if (thing.vel.x < 0)
+	{
+		thing.vel.x = std::min(0.0f, thing.vel.x + friction);
+	}
+
 
 	if (thing.pos.x < 0)
 	{

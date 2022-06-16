@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <array>
 #include <memory>
 #include <random>
 #include <utility>
