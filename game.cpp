@@ -62,6 +62,7 @@ void Game::events()
 						break;
 
 					case 'a':
+						thing.facing = F_LEFT;
 						thing.increase_vel({-0.5, 0});
 						break;
 
@@ -70,6 +71,7 @@ void Game::events()
 						break;
 
 					case 'd':
+						thing.facing = F_RIGHT;
 						thing.increase_vel({0.5, 0});
 						break;
 
@@ -81,6 +83,10 @@ void Game::events()
 			case SDL_KEYUP:
 				switch (event.key.keysym.sym)
 				{
+					case ' ':
+						thing.jump();
+						break;
+
 					case 'w':
 						thing.increase_vel({0, 0.5});
 						break;
