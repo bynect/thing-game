@@ -4,6 +4,7 @@
 #include <array>
 
 #include "vec2.hpp"
+#include "collider.hpp"
 
 enum Material {
 	M_VOID,
@@ -26,6 +27,11 @@ using MapScheme = Matrix<Material, MAP_WIDTH, MAP_HEIGHT>;
 
 extern const MapScheme scheme_1;
 
+struct Tile {
+	Material material;
+	Collider collider;
+};
+
 class Map {
 public:
 	void init(SDL_Renderer *renderer, int tile_size);
@@ -34,8 +40,10 @@ public:
 
 	void render(SDL_Renderer *renderer, Vec2<int> from = {0, 0}, Vec2<int> to = {MAP_WIDTH, MAP_HEIGHT});
 
+	Tile *colliding(const Collider &other);
+
 private:
 	int tile_size;
 	std::array<SDL_Texture *, M_COUNT> materials;
-	MapScheme map_scheme{};
+	Matrix<Tile, MAP_WIDTH, MAP_HEIGHT> tiles;
 };

@@ -26,7 +26,21 @@ void Map::init(SDL_Renderer *renderer, int tile_size)
 
 void Map::load_scheme(const MapScheme &scheme)
 {
-	map_scheme = scheme;
+	for (int row = 0; row < MAP_HEIGHT; row++)
+	{
+		for (int column = 0; column < MAP_WIDTH; column++)
+		{
+			auto &material = scheme[row][column];
+			tiles[row][column].material = material;
+			tiles[row][column].collider.active = material != M_VOID && material != M_FLOWER;
+			tiles[row][column].collider.rect = {
+				.x = column * tile_size,
+				.y = row * tile_size,
+				.w = tile_size,
+				.h = tile_size,
+			};
+		}
+	}
 }
 
 void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
@@ -41,17 +55,37 @@ void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
 	{
 		for (int column = from.x; column < to.x; column++)
 		{
-			SDL_Rect dst = {
-				.x = (column - from.x) * tile_size,
-				.y = (row - from.y) * tile_size,
-				.w = tile_size,
-				.h = tile_size,
-			};
+			//SDL_Rect dst = {
+			//	.x = (column - from.x) * tile_size,
+			//	.y = (row - from.y) * tile_size,
+			//	.w = tile_size,
+			//	.h = tile_size,
+			//};
 
-			if (map_scheme[row][column] == M_VOID) continue;
-			render_texture(renderer, materials[map_scheme[row][column]], NULL, &dst);
+			auto &tile = tiles[row][column];
+			if (tile.material == M_VOID) continue;
+
+			tile.collider.rect.x = (column - from.x) * tile_size;
+			tile.collider.rect.y = (row - from.y) * tile_size;
+			render_texture(renderer, materials[tile.material], NULL, &tile.collider.rect);
 		}
 	}
+}
+
+Tile *Map::colliding(const Collider &other)
+{
+	for (int row = 0; row < MAP_HEIGHT; row++)
+	{
+		for (int column = 0; column < MAP_WIDTH; column++)
+		{
+			auto &tile = tiles[row][column];
+			if (tile.collider.colliding(other))
+			{
+				return &tiles[row][column];
+			}
+		}
+	}
+	return nullptr;
 }
 
 const MapScheme scheme_1 = {{

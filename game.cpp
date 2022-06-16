@@ -150,13 +150,15 @@ void Game::update(float delta)
 
 	if ((thing.pos.x + thing.size) >= MAP_WIDTH * tile_size)
 	{
-		thing.pos.x = MAP_WIDTH * tile_size - thing.size;
+		thing.pos.x = (MAP_WIDTH - 1) * tile_size - thing.size;
 		thing.vel = {0, 0};
 	}
 
 	if ((thing.pos.y + thing.size) >= MAP_HEIGHT * tile_size)
+	//if ((thing.pos.y + thing.size) >= window_height)//MAP_WIDTH * tile_size)
 	{
-		thing.pos.y = MAP_HEIGHT * tile_size - thing.size - 100;
+		//thing.pos.y = window_height - thing.size;
+		thing.pos.y = (MAP_HEIGHT - 1) * tile_size - thing.size;
 		thing.vel = {0, 0};
 	}
 }
