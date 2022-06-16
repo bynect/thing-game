@@ -8,6 +8,8 @@
 #include "thing.hpp"
 #include "vec2.hpp"
 
+const float VEL = 0.25;
+
 Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : window_width(width), window_height(height), rand_generator(rand_device())
 {
 	window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, w_flags);
@@ -58,21 +60,21 @@ void Game::events()
 				switch (event.key.keysym.sym)
 				{
 					case 'w':
-						thing.increase_vel({0, -0.5});
+						thing.increase_vel({0, -VEL});
 						break;
 
 					case 'a':
 						thing.facing = F_LEFT;
-						thing.increase_vel({-0.5, 0});
+						thing.increase_vel({-VEL, 0});
 						break;
 
 					case 's':
-						thing.increase_vel({0, 0.5});
+						thing.increase_vel({0, VEL});
 						break;
 
 					case 'd':
 						thing.facing = F_RIGHT;
-						thing.increase_vel({0.5, 0});
+						thing.increase_vel({VEL, 0});
 						break;
 
 					default:
@@ -88,19 +90,19 @@ void Game::events()
 						break;
 
 					case 'w':
-						thing.increase_vel({0, 0.5});
+						thing.increase_vel({0, VEL});
 						break;
 
 					case 'a':
-						thing.increase_vel({0.5, 0});
+						thing.increase_vel({VEL, 0});
 						break;
 
 					case 's':
-						thing.increase_vel({0, -0.5});
+						thing.increase_vel({0, -VEL});
 						break;
 
 					case 'd':
-						thing.increase_vel({-0.5, 0});
+						thing.increase_vel({-VEL, 0});
 						break;
 
 					case SDLK_UP:
