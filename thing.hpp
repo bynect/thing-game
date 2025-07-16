@@ -59,12 +59,27 @@ public:
 		vel += v;
 	}
 
+	void decrease_vel(Vec2<float> v)
+	{
+		vel -= v;
+	}
+
 	void jump()
 	{
 		if (on_ground)
 		{
-			vel += {0.65f * (facing == F_RIGHT ? 1 : -1), -0.40};
+			jump_vel = {0.65f * (facing == F_RIGHT ? 1 : -1), -0.40};
+			vel += jump_vel;
 			on_ground = false;
+		}
+	}
+
+	void land()
+	{
+		if (!on_ground)
+		{
+			on_ground = true;
+			vel -= jump_vel;
 		}
 	}
 
@@ -78,8 +93,9 @@ public:
 
 	Collider collider;
 
-	bool on_ground = false;
-
 private:
 	SDL_Texture *texture;
+
+	bool on_ground = false;
+	Vec2<float> jump_vel{};
 };

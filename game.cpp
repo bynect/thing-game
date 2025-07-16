@@ -87,24 +87,24 @@ void Game::events()
 			case SDL_KEYUP:
 				switch (event.key.keysym.sym)
 				{
-					case ' ':
-						thing.jump();
-						break;
-
 					case 'w':
-						thing.increase_vel({0, VEL});
+						thing.decrease_vel({0, -VEL});
 						break;
 
 					case 'a':
-						thing.increase_vel({VEL, 0});
+						thing.decrease_vel({-VEL, 0});
 						break;
 
 					case 's':
-						thing.increase_vel({0, -VEL});
+						thing.decrease_vel({0, VEL});
 						break;
 
 					case 'd':
-						thing.increase_vel({-VEL, 0});
+						thing.decrease_vel({VEL, 0});
+						break;
+
+					case ' ':
+						thing.jump();
 						break;
 
 					case SDLK_UP:
@@ -147,22 +147,15 @@ void Game::update(float delta)
 
 		thing.vel.y = 0;
 		thing.pos.y = colliding->collider.rect.y - colliding->collider.rect.h;
-		thing.on_ground = true;
+		thing.land();
 
 		friction_coeff = DIRT_FRICTION;
 	}
 
 	auto friction = friction_coeff * delta;
-	if (thing.vel.x > 0)
-	{
-		thing.vel.x = std::max(0.0f, thing.vel.x - friction);
-	}
-	else if (thing.vel.x < 0)
-	{
-		thing.vel.x = std::min(0.0f, thing.vel.x + friction);
-	}
+	thing.vel.x = std::copysignf(std::max(0.0f, std::abs(thing.vel.x) - friction), thing.vel.x);
 
-
+	// This does not check the map bounds ...
 	if (thing.pos.x < 0)
 	{
 		thing.pos.x = 0;
