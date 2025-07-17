@@ -25,10 +25,10 @@ const float JUMP_SPEED = 0.5f;
 
 class Thing {
 public:
-    void init(SDL_Renderer *renderer, int size)
+    void init(SDL_Renderer *renderer, float size)
     {
         texture = load_texture(renderer, "assets/slime.png");
-        pos = {(float)size, (float)size};
+        pos = {0, 0};
         vel = {0, 0};
         this->size = size;
 
@@ -55,11 +55,14 @@ public:
         collider.rect.y = pos.y;
     }
 
-    void render(SDL_Renderer *renderer, Vec2<int> displacement)
+    void render(SDL_Renderer *renderer, const SDL_FRect &camera)
     {
-        SDL_Rect dst = collider.rect;
-        dst.x -= displacement.x;
-        dst.y -= displacement.y;
+        SDL_FRect dst = {
+			.x = collider.rect.x - camera.x,
+			.y = collider.rect.y - camera.y,
+			.w = float(collider.rect.w),
+			.h = float(collider.rect.h),
+		};
 
         SDL_RendererFlip flip = facing == F_RIGHT ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
         render_texture(renderer, texture, NULL, &dst, 0, NULL, flip);
@@ -95,13 +98,9 @@ public:
     }
 
     Vec2<float> pos{};
-
     Vec2<float> vel{};
-
-    int size;
-
+    float size;
     Facing facing = F_RIGHT;
-
     Collider collider;
 
 private:

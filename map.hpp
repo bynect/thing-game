@@ -39,7 +39,7 @@ public:
 
     void load_scheme(const MapScheme &scheme);
 
-    void render(SDL_Renderer *renderer, Vec2<int> from = {0, 0}, Vec2<int> to = {MAP_WIDTH, MAP_HEIGHT});
+    void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
     std::vector<Tile*> colliding(const Collider &other);
 

@@ -35,16 +35,16 @@ void Map::load_scheme(const MapScheme &scheme)
 			tiles[row][column].material = material;
 			tiles[row][column].collider.active = material != M_VOID && material != M_FLOWER;
 			tiles[row][column].collider.rect = {
-				.x = column * tile_size,
-				.y = row * tile_size,
-				.w = tile_size,
-				.h = tile_size,
+				.x = float(column * tile_size),
+				.y = float(row * tile_size),
+				.w = float(tile_size),
+				.h = float(tile_size),
 			};
 		}
 	}
 }
 
-void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
+void Map::render(SDL_Renderer *renderer, const SDL_FRect &camera)
 {
 	SDL_SetRenderDrawColor(renderer, 212, 241, 249, 255);
 	SDL_RenderClear(renderer);
@@ -52,19 +52,26 @@ void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
 //	std::cout << "map(from: " << from << ", to: " << to << ")" << std::endl;
 //	std::cout << "map_scheme.size() = " << map_scheme.size() << " map_scheme[0].size() = " << map_scheme[0].size() << std::endl;
 
-	for (int row = from.y; row < to.y; row++)
-	{
-		for (int column = from.x; column < to.x; column++)
-		{
-			auto &tile = tiles[row][column];
-			if (tile.material == M_VOID) continue;
+	int start_row = std::max(0, int(camera.y / tile_size));
+    int end_row   = std::min(MAP_HEIGHT, int(camera.y + camera.h) / tile_size + 1);
 
-			SDL_Rect dst = tile.collider.rect;
-			dst.x -= from.x * tile_size;
-			dst.y -= from.y * tile_size;
-			render_texture(renderer, materials[tile.material], NULL, &dst);
-		}
-	}
+    int start_col = std::max(0, int(camera.x / tile_size));
+    int end_col   = std::min(MAP_WIDTH, int(camera.x + camera.w) / tile_size + 1);
+
+    for (int row = start_row; row < end_row; row++) {
+        for (int col = start_col; col < end_col; col++) {
+            auto &tile = tiles[row][col];
+            if (tile.material == M_VOID) continue;
+
+            SDL_FRect dst = {
+				.x = float(col * tile_size - camera.x),
+				.y = float(row * tile_size - camera.y),
+				.w = float(tile_size),
+				.h = float(tile_size),
+			};
+            SDL_RenderCopyF(renderer, materials[tile.material], nullptr, &dst);
+        }
+    }
 }
 
 std::vector<Tile*> Map::colliding(const Collider &other)

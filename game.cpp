@@ -14,30 +14,30 @@ const float VEL = 0.25;
 Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : window_width(width), window_height(height), rand_generator(rand_device())
 {
     window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, w_flags);
-
-    if (window == nullptr)
-    {
+    if (window == nullptr) {
         std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
         panic();
     }
 
     renderer = SDL_CreateRenderer(window, -1, r_flags);
-
-    if (renderer == nullptr)
-    {
+    if (renderer == nullptr) {
         std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
         panic();
     }
 
-    camera_origin = {0, 0};
-    camera_size = {16 * 2, 9 * 2};
+	constexpr int SCALE = 16 * 2;
+    tile_size = width / SCALE;
 
-    tile_size = width / camera_size.x;
-
-    map.init(renderer, tile_size);
-    map.load_scheme(scheme_1);
+	camera = {
+		.x = 0,
+		.y = 0,
+		.w = float(16 * 2 * tile_size),
+		.h = float(9 * 2 * tile_size),
+	};
 
     thing.init(renderer, tile_size);
+    map.init(renderer, tile_size);
+    map.load_scheme(scheme_1);
 }
 
 Game::~Game()
@@ -71,25 +71,6 @@ void Game::events()
                     case SDLK_SPACE:
                         thing.jump();
                         break;
-
-                    case SDLK_UP:
-                        camera_vertical(-1);
-                        break;
-
-                    case SDLK_LEFT:
-                        camera_horizontal(-1);
-                        break;
-
-                    case SDLK_DOWN:
-                        camera_vertical(1);
-                        break;
-
-                    case SDLK_RIGHT:
-                        camera_horizontal(1);
-                        break;
-
-                    default:
-                        break;
                 }
                 break;
 
@@ -99,9 +80,6 @@ void Game::events()
                     case SDLK_a:
                     case SDLK_d:
                         thing.stop_input();
-                        break;
-
-                    default:
                         break;
                 }
                 break;
@@ -121,9 +99,9 @@ void Game::update(float delta)
         //std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
         //std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
 
-        SDL_Rect a = thing.collider.rect, b = colliding->collider.rect;
-        SDL_Rect inter;
-        SDL_IntersectRect(&a, &b, &inter);
+        SDL_FRect a = thing.collider.rect, b = colliding->collider.rect;
+        SDL_FRect inter;
+        SDL_IntersectFRect(&a, &b, &inter);
 
         if (inter.w < inter.h) {
             // Horizontal penetration
@@ -148,83 +126,45 @@ void Game::update(float delta)
         thing.collider.rect.y = thing.pos.y;
     }
 
-    if (thing.pos.x < 0) {
-        thing.pos.x = 0;
-        thing.vel = {0, 0};
-    }
-
-    if (thing.pos.y < 0) {
-        thing.pos.y = 0;
-        thing.vel = {0, 0};
-    }
-
-    if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
+	if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
         thing.pos.x = MAP_WIDTH * tile_size - thing.size;
-        thing.vel = {0, 0};
+        thing.vel.x = 0;
+    } else if (thing.pos.x < 0) {
+        thing.pos.x = 0;
+        thing.vel.x = 0;
     }
 
     if ((thing.pos.y + thing.size) > MAP_HEIGHT * tile_size) {
         thing.pos.y = MAP_HEIGHT * tile_size - thing.size;
-        thing.vel = {0, 0};
+        thing.vel.y = 0.0f;
+    } else if (thing.pos.y < 0) {
+        thing.pos.y = 0;
+        thing.vel.y = 0;
     }
 
+	Vec2<float> target = {
+		(thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
+		(thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
+	};
 
-    //SDL_Rect camera_rect = {
-    //  .x = camera_origin.x,
-    //  .y = camera_origin.y,
-    //  .w = camera_size.x,
-    //  .h = camera_size.y,
-    //};
+	target.x = std::clamp(target.x, 0.0f, MAP_WIDTH * tile_size - camera.w);
+	target.y = std::clamp(target.y, 0.0f, MAP_HEIGHT * tile_size - camera.h);
 
-    //if (!Collider::aabb(camera_rect, thing.collider.rect))
-    //{
-    //  if (camera_origin.y > thing.pos.y)
-    //  {
-    //      camera_vertical(-1);
-    //  }
-    //  else if (camera_origin.y < thing.pos.y)
-    //  {
-    //      camera_vertical(1);
-    //  }
+	constexpr float SMOOTH_SPEED = 0.01f;
+	float alpha = 1.0f - std::exp(-SMOOTH_SPEED * delta);
 
-    //  if (camera_origin.x > thing.pos.x)
-    //  {
-    //      camera_horizontal(-1);
-    //  }
-    //  else if (camera_origin.x < thing.pos.x)
-    //  {
-    //      camera_horizontal(1);
-    //  }
-    //}
+	static Vec2<float> camera_pos = {camera.x, camera.y};
+	camera_pos += (target - camera_pos) * alpha;
+
+	camera.x = camera_pos.x;
+	camera.y = camera_pos.y;
+
+	//std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
 }
 
 void Game::render()
 {
-    map.render(renderer, camera_origin, camera_origin + camera_size);
-    thing.render(renderer, camera_origin * tile_size);
+    map.render(renderer, camera);
+    thing.render(renderer, camera);
     SDL_RenderPresent(renderer);
-}
-
-void Game::camera_vertical(int tiles)
-{
-    int new_origin = camera_origin.y + tiles;
-
-//  std::cout << "vertical(tiles: " << tiles << ", origin: " << camera_origin << ", new_origin_y: " << new_origin << ")" << std::endl;
-
-    if (new_origin >= 0 && (new_origin + camera_size.y) < MAP_HEIGHT)
-    {
-        camera_origin.y = new_origin;
-    }
-}
-
-void Game::camera_horizontal(int tiles)
-{
-    int new_origin = camera_origin.x + tiles;
-
-//  std::cout << "horizontal(tiles: " << tiles << ", origin: " << camera_origin << ", new_origin_x: " << new_origin << ")" << std::endl;
-
-    if (new_origin >= 0 && (new_origin + camera_size.x) < MAP_WIDTH)
-    {
-        camera_origin.x = new_origin;
-    }
 }

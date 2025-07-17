@@ -4,9 +4,9 @@
 #include <SDL2/SDL_rect.h>
 
 struct Collider {
-	Collider(SDL_Rect rect = {}, bool active = true) : rect(rect), active(active) {}
+	Collider(SDL_FRect rect = {}, bool active = true) : rect(rect), active(active) {}
 
-	static bool aabb(const SDL_Rect &a, const SDL_Rect &b)
+	static bool aabb(const SDL_FRect &a, const SDL_FRect &b)
 	{
 		return a.x + a.w >= b.x
 			&& b.x + b.w >= a.x
@@ -14,7 +14,7 @@ struct Collider {
 			&& b.y + b.h >= a.y;
 	}
 
-	bool colliding(const SDL_Rect &other)
+	bool colliding(const SDL_FRect &other)
 	{
 		return active && aabb(rect, other);
 	}
@@ -24,6 +24,6 @@ struct Collider {
 		return active && other.active && aabb(rect, other.rect);
 	}
 
-	SDL_Rect rect;
+	SDL_FRect rect;
 	bool active;
 };

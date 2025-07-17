@@ -43,8 +43,6 @@ private:
     std::mt19937 rand_generator;
 
     Map map;
-    Vec2<int> camera_origin;
-    Vec2<int> camera_size;
-
     Thing thing;
+	SDL_FRect camera;
 };
