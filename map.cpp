@@ -2,6 +2,7 @@
 #include "game.hpp"
 #include "panic.hpp"
 #include "texture.hpp"
+#include <vector>
 
 const char *material_texture_path[M_COUNT] = {
 	/* M_VOID */ "",
@@ -66,20 +67,26 @@ void Map::render(SDL_Renderer *renderer, Vec2<int> from, Vec2<int> to)
 	}
 }
 
-Tile *Map::colliding(const Collider &other)
+std::vector<Tile*> Map::colliding(const Collider &other)
 {
-	for (int row = 0; row < MAP_HEIGHT; row++)
-	{
-		for (int column = 0; column < MAP_WIDTH; column++)
-		{
+    int approx_row = other.rect.y / tile_size;
+    int min_row = std::max(0, approx_row - 1);
+    int max_row = std::min(MAP_HEIGHT - 1, approx_row + 1);
+
+    int approx_column = other.rect.x / tile_size;
+    int min_column = std::max(0, approx_column - 1);
+    int max_column = std::min(MAP_WIDTH - 1, approx_column + 1);
+
+    std::vector<Tile*> colliding{};
+	for (int row = min_row; row <= max_row; row++) {
+		for (int column = min_column; column <= max_column; column++) {
 			auto &tile = tiles[row][column];
 			if (tile.collider.colliding(other))
-			{
-				return &tiles[row][column];
-			}
+                colliding.push_back(&tile);
 		}
 	}
-	return nullptr;
+
+	return colliding;
 }
 
 const MapScheme scheme_1 = {{
@@ -95,8 +102,8 @@ const MapScheme scheme_1 = {{
 	{M_VOID,    M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,    M_VOID,   M_VOID,   M_VOID,    M_VOID,   M_VOID,   M_FLOWER,  M_FLOWER,  M_VOID,   M_VOID,   M_VOID,   M_VOID,    M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID},
 	{M_VOID,    M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,    M_VOID,   M_VOID,   M_FLOWER,  M_VOID,   M_GRASS,  M_GRASS,   M_GRASS,   M_VOID,   M_VOID,   M_VOID,   M_VOID,    M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID},
 	{M_VOID,    M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_FLOWER,  M_GRASS,  M_GRASS,  M_GRASS,   M_GRASS,  M_DIRT,   M_DIRT,    M_GRASS,   M_GRASS,  M_GRASS,  M_VOID,   M_FLOWER,  M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID},
-	{M_FLOWER,  M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_GRASS,   M_GRASS,  M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_GRASS,  M_GRASS,   M_VOID,   M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS},
-	{M_GRASS,   M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_GRASS,  M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_GRASS,   M_GRASS,  M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT},
+	{M_FLOWER,  M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_VOID,   M_GRASS,   M_GRASS,  M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_GRASS,  M_GRASS,   M_VOID,   M_VOID,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS,  M_GRASS},
+	{M_GRASS,   M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_GRASS,  M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_GRASS,   M_GRASS,  M_GRASS,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT},
 	{M_DIRT,    M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_WATER,  M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT},
 	{M_DIRT,    M_DIRT,   M_WATER,  M_WATER,  M_WATER,  M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT},
 	{M_DIRT,    M_DIRT,   M_WATER,  M_WATER,  M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,    M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT,   M_DIRT},

@@ -2,19 +2,20 @@
 
 #include <SDL2/SDL.h>
 #include <array>
+#include <vector>
 
 #include "vec2.hpp"
 #include "collider.hpp"
 
 enum Material {
-	M_VOID,
-	M_DIRT,
-	M_LAPIS,
-	M_COAL,
-	M_GRASS,
-	M_WATER,
-	M_FLOWER,
-	M_COUNT
+    M_VOID,
+    M_DIRT,
+    M_LAPIS,
+    M_COAL,
+    M_GRASS,
+    M_WATER,
+    M_FLOWER,
+    M_COUNT
 };
 
 const int MAP_WIDTH = 48;
@@ -28,22 +29,22 @@ using MapScheme = Matrix<Material, MAP_WIDTH, MAP_HEIGHT>;
 extern const MapScheme scheme_1;
 
 struct Tile {
-	Material material;
-	Collider collider;
+    Material material;
+    Collider collider;
 };
 
 class Map {
 public:
-	void init(SDL_Renderer *renderer, int tile_size);
+    void init(SDL_Renderer *renderer, int tile_size);
 
-	void load_scheme(const MapScheme &scheme);
+    void load_scheme(const MapScheme &scheme);
 
-	void render(SDL_Renderer *renderer, Vec2<int> from = {0, 0}, Vec2<int> to = {MAP_WIDTH, MAP_HEIGHT});
+    void render(SDL_Renderer *renderer, Vec2<int> from = {0, 0}, Vec2<int> to = {MAP_WIDTH, MAP_HEIGHT});
 
-	Tile *colliding(const Collider &other);
+    std::vector<Tile*> colliding(const Collider &other);
 
 private:
-	int tile_size;
-	std::array<SDL_Texture *, M_COUNT> materials;
-	Matrix<Tile, MAP_WIDTH, MAP_HEIGHT> tiles;
+    int tile_size;
+    std::array<SDL_Texture *, M_COUNT> materials;
+    Matrix<Tile, MAP_WIDTH, MAP_HEIGHT> tiles;
 };
