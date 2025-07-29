@@ -65,23 +65,11 @@ int main()
     const float time_freq = SDL_GetPerformanceFrequency();
     auto time_last = SDL_GetPerformanceCounter();
 
-    auto frame_time = time_last;
-    int frame_count = 0;
-    int fps = 0;
-
     while (game.running())
     {
         auto time_now = SDL_GetPerformanceCounter();
         float elapsed_ms = (time_now - time_last) / time_freq * 1000.0f;
         time_last = time_now;
-
-        frame_count++;
-        if (time_now > frame_time + time_freq)
-        {
-            fps = frame_count;
-            frame_count = 0;
-            frame_time = time_now;
-        }
 
         game.events();
         game.update(elapsed_ms);

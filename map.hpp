@@ -2,9 +2,9 @@
 
 #include <SDL2/SDL.h>
 #include <array>
-#include <vector>
 
 #include "collider.hpp"
+#include "util.hpp"
 
 enum Material {
     M_VOID,
@@ -40,7 +40,7 @@ public:
 
     void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
-    std::vector<Tile*> colliding(const Collider &other);
+    Slice<Tile*> colliding(const Collider &other, Tile *(&scratch)[8]);
 
 private:
     int tile_size;

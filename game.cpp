@@ -40,7 +40,7 @@ void Game::events()
         switch (event.type)
         {
             case SDL_QUIT:
-                _running = false;
+                is_running = false;
                 break;
 
             case SDL_KEYDOWN:
@@ -80,7 +80,8 @@ void Game::update(float delta)
 {
     thing.update(delta);
 
-    for (auto colliding : map.colliding(thing.collider))
+    Tile *tiles[8];
+    for (auto colliding : map.colliding(thing.collider, tiles))
     {
         //std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
         //std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
@@ -157,8 +158,9 @@ void Game::render(int fps)
     map.render(renderer, camera);
     thing.render(renderer, camera);
 
-    ImGui::Begin("FPS");
+    ImGui::Begin("Debug");
     ImGui::Text("FPS: %d", fps);
+    ImGui::Checkbox("Show Colliders", &show_colliders);
     ImGui::End();
 
     ImGui::Render();

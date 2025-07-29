@@ -3,7 +3,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <random>
-#include <utility>
 
 #include "map.hpp"
 #include "thing.hpp"
@@ -18,7 +17,7 @@ public:
 
     void render(int fps);
 
-    bool running() { return _running; }
+    bool running() { return is_running; }
 
     void camera_vertical(int tiles);
 
@@ -28,7 +27,9 @@ private:
     int window_width;
     int window_height;
     int tile_size;
-    bool _running = true;
+
+    bool is_running = true;
+    bool show_colliders = false;
 
     std::random_device rand_device;
     std::mt19937 rand_generator;

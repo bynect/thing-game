@@ -72,7 +72,7 @@ void Map::render(SDL_Renderer *renderer, const SDL_FRect &camera)
     }
 }
 
-std::vector<Tile*> Map::colliding(const Collider &other)
+Slice<Tile*> Map::colliding(const Collider &other, Tile *(&scratch)[8])
 {
     int approx_row = other.rect.y / tile_size;
     int min_row = std::max(0, approx_row - 1);
@@ -82,16 +82,16 @@ std::vector<Tile*> Map::colliding(const Collider &other)
     int min_column = std::max(0, approx_column - 1);
     int max_column = std::min(MAP_WIDTH - 1, approx_column + 1);
 
-    std::vector<Tile*> colliding{};
+    size_t idx = 0;
     for (int row = min_row; row <= max_row; row++) {
         for (int column = min_column; column <= max_column; column++) {
             auto &tile = tiles[row][column];
             if (tile.collider.colliding(other))
-                colliding.push_back(&tile);
+                scratch[idx++] = &tile;
         }
     }
 
-    return colliding;
+    return Slice(scratch, idx);
 }
 
 const MapScheme scheme_1 = {{
