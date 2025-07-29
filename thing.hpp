@@ -12,14 +12,6 @@ enum Facing {
     F_RIGHT,
 };
 
-constexpr float GRAVITY = 0.001f;
-constexpr float AIR_FRICTION = 0.0002f;
-constexpr float DIRT_FRICTION = 0.008f;
-constexpr float MAX_FALL_SPEED = 1.0f;
-constexpr float MOVE_ACCEL = 0.02f;
-constexpr float MAX_MOVE_SPEED = 0.4f;
-constexpr float JUMP_SPEED = 0.5f;
-
 class Thing {
 public:
     void init(SDL_Renderer *renderer, float size);
@@ -28,31 +20,13 @@ public:
 
     void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
-    void move_input(float dir)
-    {
-        accel.x = dir * MOVE_ACCEL;
-        if (dir > 0) facing = F_RIGHT;
-        else if (dir < 0) facing = F_LEFT;
-    }
+    void move_input(float dir);
 
-    void stop_input()
-    {
-        accel.x = 0;
-    }
+    void stop_input();
 
-    void jump()
-    {
-        if (on_ground) {
-            vel.y = -JUMP_SPEED;
-            on_ground = false;
-        }
-    }
+    void jump();
 
-    void land()
-    {
-        on_ground = true;
-        vel.y = 0.f;
-    }
+    void land();
 
     Vec2<float> pos{};
     Vec2<float> vel{};

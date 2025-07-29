@@ -3,6 +3,15 @@
 #include "thing.hpp"
 #include "texture.hpp"
 
+
+constexpr float GRAVITY = 0.001f;
+constexpr float AIR_FRICTION = 0.0002f;
+constexpr float DIRT_FRICTION = 0.008f;
+constexpr float MAX_FALL_SPEED = 1.0f;
+constexpr float MOVE_ACCEL = 0.02f;
+constexpr float MAX_MOVE_SPEED = 0.4f;
+constexpr float JUMP_SPEED = 0.5f;
+
 void Thing::init(SDL_Renderer *renderer, float size)
 {
     this->size = size;
@@ -31,6 +40,32 @@ void Thing::update(float delta)
 
     collider.rect.x = pos.x;
     collider.rect.y = pos.y;
+}
+
+void Thing::move_input(float dir)
+{
+    accel.x = dir * MOVE_ACCEL;
+    if (dir > 0) facing = F_RIGHT;
+    else if (dir < 0) facing = F_LEFT;
+}
+
+void Thing::stop_input()
+{
+    accel.x = 0;
+}
+
+void Thing::jump()
+{
+    if (on_ground) {
+        vel.y = -JUMP_SPEED;
+        on_ground = false;
+    }
+}
+
+void Thing::land()
+{
+    on_ground = true;
+    vel.y = 0.f;
 }
 
 void Thing::render(SDL_Renderer *renderer, const SDL_FRect &camera)
