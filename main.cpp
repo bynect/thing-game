@@ -5,6 +5,9 @@
 
 #include "game.hpp"
 #include "panic.hpp"
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
 
 int main()
 {
@@ -20,7 +23,25 @@ int main()
         panic();
     }
 
-    Game game("thing-game", 1600, 900);
+    int width = 1600, height = 900;
+
+    auto window = SDL_CreateWindow("thing", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+    if (window == nullptr) {
+        std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
+        panic();
+    }
+
+    auto renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == nullptr) {
+        std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
+        panic();
+    }
+
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+
+    Game game(width, height, renderer);
 
     const float time_freq = SDL_GetPerformanceFrequency();
     auto time_last = SDL_GetPerformanceCounter();
@@ -28,6 +49,7 @@ int main()
     const float frame_delta = 1000.0f / 60.0f;
     auto frame_time = time_last;
     auto frame_count = 0;
+
 
     while (game.running())
     {

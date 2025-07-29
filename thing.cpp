@@ -5,10 +5,10 @@
 
 void Thing::init(SDL_Renderer *renderer, float size)
 {
+    this->size = size;
     texture = load_texture(renderer, "assets/slime.png");
     pos = {0, 0};
     vel = {0, 0};
-    this->size = size;
 
     collider.rect.x = pos.x;
     collider.rect.y = pos.y;

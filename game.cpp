@@ -6,26 +6,13 @@
 
 #include "game.hpp"
 #include "map.hpp"
-#include "panic.hpp"
 #include "thing.hpp"
 #include "vec2.hpp"
 
 const float VEL = 0.25;
 
-Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : window_width(width), window_height(height), rand_generator(rand_device())
+Game::Game(int width, int height, SDL_Renderer *renderer) :  window_width(width), window_height(height), rand_generator(rand_device()), renderer(renderer)
 {
-    window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, w_flags);
-    if (window == nullptr) {
-        std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
-        panic();
-    }
-
-    renderer = SDL_CreateRenderer(window, -1, r_flags);
-    if (renderer == nullptr) {
-        std::cout << "Unable to create SDL_Window: " << SDL_GetError() << std::endl;
-        panic();
-    }
-
     constexpr int SCALE = 16 * 2;
     tile_size = width / SCALE;
 
@@ -39,12 +26,6 @@ Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : 
     thing.init(renderer, tile_size);
     map.init(renderer, tile_size);
     map.load_scheme(scheme_1);
-}
-
-Game::~Game()
-{
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
 }
 
 void Game::events()
