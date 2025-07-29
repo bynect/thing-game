@@ -3,7 +3,6 @@
 #include "thing.hpp"
 #include "texture.hpp"
 
-
 constexpr float GRAVITY = 0.001f;
 constexpr float AIR_FRICTION = 0.0002f;
 constexpr float DIRT_FRICTION = 0.008f;
@@ -42,6 +41,63 @@ void Thing::update(float delta)
     collider.rect.y = pos.y;
 }
 
+static constexpr float RESTITUTION   = 0.4f;
+static constexpr float BOUNCE_CUTOFF = 0.08f;
+
+void Thing::collisions(const Slice<Tile *> &colliding)
+{
+    for (auto hit : colliding)
+    {
+        const SDL_FRect& b = hit->collider.rect;
+        SDL_FRect inter;
+        SDL_IntersectFRect(&collider.rect, &b, &inter);
+
+        // Only handle X‐penetrations here:
+        if (inter.w > 0.0f && inter.w < inter.h)
+        {
+            // push slime out of the wall
+            if (vel.x > 0) pos.x -= inter.w;
+            else           pos.x += inter.w;
+
+            // reflect & damp horizontal velocity
+            vel.x = -vel.x * RESTITUTION;
+
+            // update collider for next passes
+            collider.rect.x = pos.x;
+        }
+    }
+
+    for (auto hit : colliding)
+    {
+        const SDL_FRect& b = hit->collider.rect;
+        SDL_FRect inter;
+        SDL_IntersectFRect(&collider.rect, &b, &inter);
+
+        // Only handle Y‐penetrations here:
+        if (inter.h > 0.0f && inter.h <= inter.w)
+        {
+            if (vel.y > 0.0f)
+            {
+                // hitting the floor
+                pos.y -= inter.h;
+                vel.y  = -vel.y * RESTITUTION;
+            }
+            else
+            {
+                // hitting the ceiling
+                pos.y += inter.h;
+                vel.y  = -vel.y * RESTITUTION;
+            }
+
+            if (std::abs(vel.y) < BOUNCE_CUTOFF)
+                land();
+
+            // update collider
+            collider.rect.y = pos.y;
+        }
+    }
+}
+
 void Thing::move_input(float dir)
 {
     accel.x = dir * MOVE_ACCEL;
@@ -56,8 +112,10 @@ void Thing::stop_input()
 
 void Thing::jump()
 {
-    if (on_ground) {
-        vel.y = -JUMP_SPEED;
+    Vec2<float> threshold = {1, 1};
+    auto diff = (pos - landing).abs();
+    if (on_ground || diff < threshold) {
+        vel.y -= JUMP_SPEED;
         on_ground = false;
     }
 }
@@ -65,6 +123,7 @@ void Thing::jump()
 void Thing::land()
 {
     on_ground = true;
+    landing = pos;
     vel.y = 0.f;
 }
 
@@ -79,7 +138,4 @@ void Thing::render(SDL_Renderer *renderer, const SDL_FRect &camera)
 
     SDL_RendererFlip flip = facing == F_RIGHT ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
     render_texture(renderer, texture, NULL, &dst, 0, NULL, flip);
-
-    //std::cout << "displacement: " << displacement << std::endl;
-    //std::cout << "x: " << dst.x << " + y: " << dst.y << std::endl;
 }

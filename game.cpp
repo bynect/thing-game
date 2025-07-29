@@ -1,7 +1,5 @@
 #include <SDL2/SDL_rect.h>
-#include <iostream>
 #include <SDL2/SDL.h>
-#include <iterator>
 #include <random>
 #include <algorithm>
 
@@ -81,43 +79,15 @@ void Game::update(float delta)
 {
     thing.update(delta);
 
-    hits.clear();
-
     Tile *tiles[8];
     auto colliding = map.colliding(thing.collider, tiles);
-    hits.insert(hits.end(), colliding.begin(), colliding.end());
 
-    for (auto hit : colliding)
-    {
-        //std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
-        //std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
-
-        SDL_FRect a = thing.collider.rect, b = hit->collider.rect;
-        SDL_FRect inter;
-        SDL_IntersectFRect(&a, &b, &inter);
-
-        if (inter.w < inter.h) {
-            // Horizontal penetration
-            if (thing.pos.x < b.x)
-                thing.pos.x -= inter.w;
-            else
-                thing.pos.x += inter.w;
-
-            thing.vel.x = 0.0f;
-        } else {
-            // Vertical penetration
-            if (thing.pos.y < b.y) {
-                thing.pos.y -= inter.h;
-                thing.land();
-            } else
-                thing.pos.y += inter.h;
-
-            thing.vel.y = 0.0f;
-        }
-
-        thing.collider.rect.x = thing.pos.x;
-        thing.collider.rect.y = thing.pos.y;
+    if (show_colliders) {
+        hits.clear();
+        hits.insert(hits.end(), colliding.begin(), colliding.end());
     }
+
+    thing.collisions(colliding);
 
     // Clamp to world width
     if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
@@ -155,8 +125,6 @@ void Game::update(float delta)
     float alpha = 1.0f - std::exp(-SMOOTH_SPEED * delta);
     camera.x += (target.x - camera.x) * alpha;
     camera.y += (target.y - camera.y) * alpha;
-
-    //std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
 }
 
 void Game::render()

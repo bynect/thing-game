@@ -52,6 +52,16 @@ struct Vec2 {
         return Vec2(v.x / t, v.y / t);
     }
 
+    friend bool operator<(const V v, const V t)
+    {
+        return v.x*v.x + v.y*v.y < t.x*t.x + t.y*t.y;
+    }
+
+    friend bool operator>(const V v, const V t)
+    {
+        return !(v < t);
+    }
+
     V operator+=(const V v)
     {
         this->x += v.x;
@@ -106,6 +116,11 @@ struct Vec2 {
         this->x /= t;
         this->y /= t;
         return *this;
+    }
+
+    V abs()
+    {
+        return Vec2(std::abs(this->x), std::abs(this->y));
     }
 
     // Rect1 = (min x, y) -> min1, (max x, y) -> max1

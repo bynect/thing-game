@@ -4,6 +4,8 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 
+#include "map.hpp"
+#include "util.hpp"
 #include "vec2.hpp"
 #include "collider.hpp"
 
@@ -17,6 +19,8 @@ public:
     void init(SDL_Renderer *renderer, float size);
 
     void update(float delta);
+
+    void collisions(const Slice<Tile *> &colliding);
 
     void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
@@ -37,9 +41,10 @@ public:
 private:
     SDL_Texture *texture;
     bool on_ground = false;
+    Vec2<float> landing{};
     Vec2<float> accel{0, 0};
 
-    void apply_friction(float& v, float coeff, float delta)
+    inline void apply_friction(float& v, float coeff, float delta)
     {
         if (v == 0.0f) return;
         float sign = (v > 0.0f) ? 1.0f : -1.0f;
