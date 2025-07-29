@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <random>
+#include <algorithm>
 
 #include "game.hpp"
 #include "map.hpp"
@@ -25,15 +26,15 @@ Game::Game(const char *name, int width, int height, int w_flags, int r_flags) : 
         panic();
     }
 
-	constexpr int SCALE = 16 * 2;
+    constexpr int SCALE = 16 * 2;
     tile_size = width / SCALE;
 
-	camera = {
-		.x = 0,
-		.y = 0,
-		.w = float(16 * 2 * tile_size),
-		.h = float(9 * 2 * tile_size),
-	};
+    camera = {
+        .x = 0,
+        .y = 0,
+        .w = float(16 * 2 * tile_size),
+        .h = float(9 * 2 * tile_size),
+    };
 
     thing.init(renderer, tile_size);
     map.init(renderer, tile_size);
@@ -126,7 +127,7 @@ void Game::update(float delta)
         thing.collider.rect.y = thing.pos.y;
     }
 
-	if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
+    if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
         thing.pos.x = MAP_WIDTH * tile_size - thing.size;
         thing.vel.x = 0;
     } else if (thing.pos.x < 0) {
@@ -142,24 +143,24 @@ void Game::update(float delta)
         thing.vel.y = 0;
     }
 
-	Vec2<float> target = {
-		(thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
-		(thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
-	};
+    Vec2<float> target = {
+        (thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
+        (thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
+    };
 
-	target.x = std::clamp(target.x, 0.0f, MAP_WIDTH * tile_size - camera.w);
-	target.y = std::clamp(target.y, 0.0f, MAP_HEIGHT * tile_size - camera.h);
+    target.x = std::clamp(target.x, 0.0f, MAP_WIDTH * tile_size - camera.w);
+    target.y = std::clamp(target.y, 0.0f, MAP_HEIGHT * tile_size - camera.h);
 
-	constexpr float SMOOTH_SPEED = 0.01f;
-	float alpha = 1.0f - std::exp(-SMOOTH_SPEED * delta);
+    constexpr float SMOOTH_SPEED = 0.01f;
+    float alpha = 1.0f - std::exp(-SMOOTH_SPEED * delta);
 
-	static Vec2<float> camera_pos = {camera.x, camera.y};
-	camera_pos += (target - camera_pos) * alpha;
+    static Vec2<float> camera_pos = {camera.x, camera.y};
+    camera_pos += (target - camera_pos) * alpha;
 
-	camera.x = camera_pos.x;
-	camera.y = camera_pos.y;
+    camera.x = camera_pos.x;
+    camera.y = camera_pos.y;
 
-	//std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
+    //std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
 }
 
 void Game::render()

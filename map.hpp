@@ -4,7 +4,6 @@
 #include <array>
 #include <vector>
 
-#include "vec2.hpp"
 #include "collider.hpp"
 
 enum Material {

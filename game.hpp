@@ -2,15 +2,10 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <array>
-#include <memory>
 #include <random>
 #include <utility>
 
-#include "panic.hpp"
 #include "map.hpp"
-#include "vec2.hpp"
-#include "texture.hpp"
 #include "thing.hpp"
 
 class Game {
@@ -44,5 +39,5 @@ private:
 
     Map map;
     Thing thing;
-	SDL_FRect camera;
+    SDL_FRect camera;
 };
