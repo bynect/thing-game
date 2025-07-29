@@ -16,7 +16,7 @@ public:
 
     void update(float delta);
 
-    void render();
+    void render(int fps);
 
     bool running() { return _running; }
 

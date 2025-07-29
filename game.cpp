@@ -9,7 +9,9 @@
 #include "thing.hpp"
 #include "vec2.hpp"
 
-const float VEL = 0.25;
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
 
 Game::Game(int width, int height, SDL_Renderer *renderer) :  window_width(width), window_height(height), rand_generator(rand_device()), renderer(renderer)
 {
@@ -33,6 +35,8 @@ void Game::events()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        ImGui_ImplSDL2_ProcessEvent(&event);
+
         switch (event.type)
         {
             case SDL_QUIT:
@@ -144,9 +148,21 @@ void Game::update(float delta)
     //std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
 }
 
-void Game::render()
+void Game::render(int fps)
 {
+    ImGui_ImplSDLRenderer2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
     map.render(renderer, camera);
     thing.render(renderer, camera);
+
+    ImGui::Begin("FPS");
+    ImGui::Text("FPS: %d", fps);
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+
     SDL_RenderPresent(renderer);
 }

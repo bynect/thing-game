@@ -12,13 +12,13 @@ enum Facing {
     F_RIGHT,
 };
 
-const float GRAVITY = 0.001f;
-const float AIR_FRICTION = 0.0002f;
-const float DIRT_FRICTION = 0.008f;
-const float MAX_FALL_SPEED = 1.0f;
-const float MOVE_ACCEL = 0.01f;
-const float MAX_MOVE_SPEED = 0.4f;
-const float JUMP_SPEED = 0.5f;
+constexpr float GRAVITY = 0.001f;
+constexpr float AIR_FRICTION = 0.0002f;
+constexpr float DIRT_FRICTION = 0.008f;
+constexpr float MAX_FALL_SPEED = 1.0f;
+constexpr float MOVE_ACCEL = 0.02f;
+constexpr float MAX_MOVE_SPEED = 0.4f;
+constexpr float JUMP_SPEED = 0.5f;
 
 class Thing {
 public:
