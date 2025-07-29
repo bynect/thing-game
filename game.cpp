@@ -1,6 +1,7 @@
 #include <SDL2/SDL_rect.h>
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <iterator>
 #include <random>
 #include <algorithm>
 
@@ -80,13 +81,18 @@ void Game::update(float delta)
 {
     thing.update(delta);
 
+    hits.clear();
+
     Tile *tiles[8];
-    for (auto colliding : map.colliding(thing.collider, tiles))
+    auto colliding = map.colliding(thing.collider, tiles);
+    hits.insert(hits.end(), colliding.begin(), colliding.end());
+
+    for (auto hit : colliding)
     {
         //std::cout << "cx " << colliding->collider.rect.x << " cy " << colliding->collider.rect.y << " on " << colliding->collider.active << std::endl;
         //std::cout << "vel " << thing.vel << ", pos " << thing.pos << std::endl;
 
-        SDL_FRect a = thing.collider.rect, b = colliding->collider.rect;
+        SDL_FRect a = thing.collider.rect, b = hit->collider.rect;
         SDL_FRect inter;
         SDL_IntersectFRect(&a, &b, &inter);
 
@@ -113,6 +119,7 @@ void Game::update(float delta)
         thing.collider.rect.y = thing.pos.y;
     }
 
+    // Clamp to world width
     if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
         thing.pos.x = MAP_WIDTH * tile_size - thing.size;
         thing.vel.x = 0;
@@ -121,6 +128,7 @@ void Game::update(float delta)
         thing.vel.x = 0;
     }
 
+    // Clamp to world height
     if ((thing.pos.y + thing.size) > MAP_HEIGHT * tile_size) {
         thing.pos.y = MAP_HEIGHT * tile_size - thing.size;
         thing.vel.y = 0.0f;
@@ -129,42 +137,60 @@ void Game::update(float delta)
         thing.vel.y = 0;
     }
 
+    // Follow player with camera
     Vec2<float> target = {
-        (thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
-        (thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
+        std::clamp(
+            (thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
+            0.0f,
+            MAP_WIDTH * tile_size - camera.w
+        ),
+        std::clamp(
+            (thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
+            0.0f,
+            MAP_HEIGHT * tile_size - camera.h
+        ),
     };
 
-    target.x = std::clamp(target.x, 0.0f, MAP_WIDTH * tile_size - camera.w);
-    target.y = std::clamp(target.y, 0.0f, MAP_HEIGHT * tile_size - camera.h);
-
-    constexpr float SMOOTH_SPEED = 0.01f;
+    constexpr float SMOOTH_SPEED = 0.1f;
     float alpha = 1.0f - std::exp(-SMOOTH_SPEED * delta);
-
-    static Vec2<float> camera_pos = {camera.x, camera.y};
-    camera_pos += (target - camera_pos) * alpha;
-
-    camera.x = camera_pos.x;
-    camera.y = camera_pos.y;
+    camera.x += (target.x - camera.x) * alpha;
+    camera.y += (target.y - camera.y) * alpha;
 
     //std::cout << "camerax " << camera.x << " cameray " << camera.y << std::endl;
 }
 
-void Game::render(int fps)
+void Game::render()
+{
+    map.render(renderer, camera);
+    thing.render(renderer, camera);
+
+    if (show_colliders) {
+        for (auto hit : hits) {
+            hit->collider.render(renderer, camera);
+        }
+        thing.collider.render(renderer, camera);
+    }
+
+    render_menu();
+    SDL_RenderPresent(renderer);
+}
+
+void Game::render_menu()
 {
     ImGui_ImplSDLRenderer2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    map.render(renderer, camera);
-    thing.render(renderer, camera);
-
+    int fps = ImGui::GetIO().Framerate;
     ImGui::Begin("Debug");
     ImGui::Text("FPS: %d", fps);
+    ImGui::Text("Thing X: %f", thing.collider.rect.x);
+    ImGui::Text("Thing Y: %f", thing.collider.rect.y);
+    ImGui::Text("Camera X: %f", camera.x);
+    ImGui::Text("Camera Y: %f", camera.y);
     ImGui::Checkbox("Show Colliders", &show_colliders);
     ImGui::End();
 
     ImGui::Render();
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-
-    SDL_RenderPresent(renderer);
 }

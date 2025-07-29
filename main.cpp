@@ -55,7 +55,9 @@ int main()
 
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui::GetIO().IniFilename = nullptr;
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowPadding = ImVec2(20, 20);
 
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
@@ -73,7 +75,7 @@ int main()
 
         game.events();
         game.update(elapsed_ms);
-        game.render(ImGui::GetIO().Framerate);
+        game.render();
 
         SDL_Delay(0);
     }

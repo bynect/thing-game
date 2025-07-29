@@ -38,8 +38,8 @@ void Thing::render(SDL_Renderer *renderer, const SDL_FRect &camera)
     SDL_FRect dst = {
         .x = collider.rect.x - camera.x,
         .y = collider.rect.y - camera.y,
-        .w = float(collider.rect.w),
-        .h = float(collider.rect.h),
+        .w = collider.rect.w,
+        .h = collider.rect.h,
     };
 
     SDL_RendererFlip flip = facing == F_RIGHT ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL;
