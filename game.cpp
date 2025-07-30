@@ -7,6 +7,7 @@
 #include "map.hpp"
 #include "thing.hpp"
 #include "vec2.hpp"
+#include "panic.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
@@ -24,9 +25,15 @@ Game::Game(int width, int height, SDL_Renderer *renderer) :  window_width(width)
         .h = float(9 * 2 * tile_size),
     };
 
-    thing.init(renderer, tile_size);
     map.init(renderer, tile_size);
-    map.load_scheme(scheme_1);
+
+    if (!map.load_file("maps/test.map")) {
+        std::cout << "Failed to load map" << std::endl;
+        panic();
+    }
+
+    thing.init(renderer, tile_size);
+    thing.set_position(map.spawn());
 }
 
 void Game::events()
@@ -89,9 +96,12 @@ void Game::update(float delta)
 
     thing.collisions(colliding);
 
+    const size_t map_width = map.width();
+    const size_t map_height = map.height();
+
     // Clamp to world width
-    if ((thing.pos.x + thing.size) > MAP_WIDTH * tile_size) {
-        thing.pos.x = MAP_WIDTH * tile_size - thing.size;
+    if ((thing.pos.x + thing.size) > map_width * tile_size) {
+        thing.pos.x = map_width * tile_size - thing.size;
         thing.vel.x = 0;
     } else if (thing.pos.x < 0) {
         thing.pos.x = 0;
@@ -99,8 +109,8 @@ void Game::update(float delta)
     }
 
     // Clamp to world height
-    if ((thing.pos.y + thing.size) > MAP_HEIGHT * tile_size) {
-        thing.pos.y = MAP_HEIGHT * tile_size - thing.size;
+    if ((thing.pos.y + thing.size) > map_height * tile_size) {
+        thing.pos.y = map_height * tile_size - thing.size;
         thing.vel.y = 0.0f;
     } else if (thing.pos.y < 0) {
         thing.pos.y = 0;
@@ -112,12 +122,12 @@ void Game::update(float delta)
         std::clamp(
             (thing.pos.x + thing.size * 0.5f) - (camera.w * 0.5f),
             0.0f,
-            MAP_WIDTH * tile_size - camera.w
+            map_width * tile_size - camera.w
         ),
         std::clamp(
             (thing.pos.y + thing.size * 0.5f) - (camera.h * 0.5f),
             0.0f,
-            MAP_HEIGHT * tile_size - camera.h
+            map_height * tile_size - camera.h
         ),
     };
 
@@ -152,10 +162,12 @@ void Game::render_menu()
     int fps = ImGui::GetIO().Framerate;
     ImGui::Begin("Debug");
     ImGui::Text("FPS: %d", fps);
-    ImGui::Text("Thing X: %f", thing.collider.rect.x);
-    ImGui::Text("Thing Y: %f", thing.collider.rect.y);
     ImGui::Text("Camera X: %f", camera.x);
     ImGui::Text("Camera Y: %f", camera.y);
+    ImGui::Text("Thing Position: %f, %f", thing.pos.x, thing.pos.y);
+    ImGui::Text("Thing Velocity: %f, %f", thing.vel.x, thing.vel.y);
+    ImGui::Text("Thing Accelleration: %f, %f", thing.accel.x, thing.accel.y);
+    ImGui::Text("Thing Grounded: %s", thing.on_ground ? "yes" : "no");
     ImGui::Checkbox("Show Colliders", &show_colliders);
     ImGui::End();
 

@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
 
 #include "thing.hpp"
 #include "texture.hpp"
@@ -41,61 +43,39 @@ void Thing::update(float delta)
     collider.rect.y = pos.y;
 }
 
-static constexpr float RESTITUTION   = 0.4f;
+static constexpr float RESTITUTION   = 0.5f;
 static constexpr float BOUNCE_CUTOFF = 0.08f;
 
 void Thing::collisions(const Slice<Tile *> &colliding)
 {
     for (auto hit : colliding)
     {
-        const SDL_FRect& b = hit->collider.rect;
+        SDL_FRect b = hit->collider.rect;
         SDL_FRect inter;
         SDL_IntersectFRect(&collider.rect, &b, &inter);
 
-        // Only handle X‐penetrations here:
-        if (inter.w > 0.0f && inter.w < inter.h)
-        {
-            // push slime out of the wall
-            if (vel.x > 0) pos.x -= inter.w;
-            else           pos.x += inter.w;
-
-            // reflect & damp horizontal velocity
-            vel.x = -vel.x * RESTITUTION;
-
-            // update collider for next passes
-            collider.rect.x = pos.x;
-        }
-    }
-
-    for (auto hit : colliding)
-    {
-        const SDL_FRect& b = hit->collider.rect;
-        SDL_FRect inter;
-        SDL_IntersectFRect(&collider.rect, &b, &inter);
-
-        // Only handle Y‐penetrations here:
-        if (inter.h > 0.0f && inter.h <= inter.w)
-        {
-            if (vel.y > 0.0f)
-            {
-                // hitting the floor
-                pos.y -= inter.h;
-                vel.y  = -vel.y * RESTITUTION;
-            }
+        if (inter.w < inter.h) {
+            // Horizontal penetration
+            if (pos.x < b.x)
+                pos.x -= inter.w;
             else
-            {
-                // hitting the ceiling
-                pos.y += inter.h;
-                vel.y  = -vel.y * RESTITUTION;
-            }
+                pos.x += inter.w;
 
-            if (std::abs(vel.y) < BOUNCE_CUTOFF)
+            vel.x = 0.0f;
+        } else {
+            // Vertical penetration
+            if (pos.y < b.y) {
+                pos.y -= inter.h;
                 land();
+            } else
+                pos.y += inter.h;
 
-            // update collider
-            collider.rect.y = pos.y;
+            vel.y = 0.0f;
         }
     }
+
+    collider.rect.x = pos.x;
+    collider.rect.y = pos.y;
 }
 
 void Thing::move_input(float dir)
@@ -125,6 +105,13 @@ void Thing::land()
     on_ground = true;
     landing = pos;
     vel.y = 0.f;
+}
+
+void Thing::set_position(Vec2<float> pos)
+{
+    this->pos = pos;
+    collider.rect.x = pos.x;
+    collider.rect.y = pos.y;
 }
 
 void Thing::render(SDL_Renderer *renderer, const SDL_FRect &camera)

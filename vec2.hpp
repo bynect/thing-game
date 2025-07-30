@@ -54,7 +54,7 @@ struct Vec2 {
 
     friend bool operator<(const V v, const V t)
     {
-        return v.x*v.x + v.y*v.y < t.x*t.x + t.y*t.y;
+        return (v.x*v.x + v.y*v.y) < (t.x*t.x + t.y*t.y);
     }
 
     friend bool operator>(const V v, const V t)

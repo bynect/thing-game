@@ -5,6 +5,7 @@
 
 #include "collider.hpp"
 #include "util.hpp"
+#include "vec2.hpp"
 
 enum Material {
     M_VOID,
@@ -17,16 +18,6 @@ enum Material {
     M_COUNT
 };
 
-const int MAP_WIDTH = 48;
-const int MAP_HEIGHT = 24;
-
-template<typename T, int X, int Y>
-using Matrix = std::array<std::array<T, X>, Y>;
-
-using MapScheme = Matrix<Material, MAP_WIDTH, MAP_HEIGHT>;
-
-extern const MapScheme scheme_1;
-
 struct Tile {
     Material material;
     Collider collider;
@@ -36,14 +27,21 @@ class Map {
 public:
     void init(SDL_Renderer *renderer, int tile_size);
 
-    void load_scheme(const MapScheme &scheme);
+    bool load_file(const char *path);
 
     void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
     Slice<Tile*> colliding(const Collider &other, Tile *(&scratch)[8]);
 
+    size_t width() const { return tiles.columns; }
+
+    size_t height() const { return tiles.rows; }
+
+    Vec2<float> spawn() const { return spawn_pos; }
+
 private:
     int tile_size;
     std::array<SDL_Texture *, M_COUNT> materials;
-    Matrix<Tile, MAP_WIDTH, MAP_HEIGHT> tiles;
+    Matrix<Tile> tiles{0, 0};
+    Vec2<float> spawn_pos{0, 0};
 };

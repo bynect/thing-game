@@ -32,17 +32,19 @@ public:
 
     void land();
 
+    void set_position(Vec2<float> pos);
+
     Vec2<float> pos{};
     Vec2<float> vel{};
     float size;
     Facing facing = F_RIGHT;
     Collider collider;
+    Vec2<float> accel{0, 0};
+    bool on_ground = false;
 
 private:
     SDL_Texture *texture;
-    bool on_ground = false;
     Vec2<float> landing{};
-    Vec2<float> accel{0, 0};
 
     inline void apply_friction(float& v, float coeff, float delta)
     {
