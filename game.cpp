@@ -7,7 +7,6 @@
 #include "map.hpp"
 #include "thing.hpp"
 #include "vec2.hpp"
-#include "panic.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"

@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "game.hpp"
-#include "panic.hpp"
+#include "util.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"

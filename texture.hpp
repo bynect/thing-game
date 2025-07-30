@@ -4,7 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 
-#include "panic.hpp"
+#include "util.hpp"
 
 static inline void render_texture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *src, SDL_FRect *dst)
 {
