@@ -35,7 +35,7 @@ using MapScheme = FixMatrix<Material, MAP_WIDTH, MAP_HEIGHT>;
 
 extern const MapScheme scheme_1;
 
-bool Map::load_file(const char *path)
+bool Map::load_file(std::string path)
 {
     std::ifstream infile(path);
     std::string line;
@@ -133,6 +133,7 @@ bool Map::load_file(const char *path)
         return false;
     }
 
+    this->path = std::move(path);
     return true;
 }
 

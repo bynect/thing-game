@@ -27,7 +27,7 @@ class Map {
 public:
     void init(SDL_Renderer *renderer, int tile_size);
 
-    bool load_file(const char *path);
+    bool load_file(std::string path);
 
     void render(SDL_Renderer *renderer, const SDL_FRect &camera);
 
@@ -39,8 +39,11 @@ public:
 
     Vec2<float> spawn() const { return spawn_pos; }
 
+    const std::string& file_path() const { return path; }
+
 private:
     int tile_size;
+    std::string path;
     std::array<SDL_Texture *, M_COUNT> materials;
     Matrix<Tile> tiles{0, 0};
     Vec2<float> spawn_pos{0, 0};

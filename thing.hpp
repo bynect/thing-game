@@ -32,7 +32,7 @@ public:
 
     void land();
 
-    void set_position(Vec2<float> pos);
+    void spawn(Vec2<float> pos);
 
     Vec2<float> pos{};
     Vec2<float> vel{};

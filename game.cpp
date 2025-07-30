@@ -7,6 +7,7 @@
 #include "map.hpp"
 #include "thing.hpp"
 #include "vec2.hpp"
+#include "util.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
@@ -32,7 +33,7 @@ Game::Game(int width, int height, SDL_Renderer *renderer) :  window_width(width)
     }
 
     thing.init(renderer, tile_size);
-    thing.set_position(map.spawn());
+    thing.spawn(map.spawn());
 }
 
 void Game::events()
@@ -158,16 +159,52 @@ void Game::render_menu()
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    int fps = ImGui::GetIO().Framerate;
-    ImGui::Begin("Debug");
-    ImGui::Text("FPS: %d", fps);
-    ImGui::Text("Camera X: %f", camera.x);
-    ImGui::Text("Camera Y: %f", camera.y);
-    ImGui::Text("Thing Position: %f, %f", thing.pos.x, thing.pos.y);
-    ImGui::Text("Thing Velocity: %f, %f", thing.vel.x, thing.vel.y);
-    ImGui::Text("Thing Accelleration: %f, %f", thing.accel.x, thing.accel.y);
-    ImGui::Text("Thing Grounded: %s", thing.on_ground ? "yes" : "no");
-    ImGui::Checkbox("Show Colliders", &show_colliders);
+    if (ImGui::Begin("Debug")) {
+        int fps = ImGui::GetIO().Framerate;
+        ImGui::Text("FPS: %d", fps);
+
+        ImGui::BeginTabBar("DebugTabs");
+
+        if (ImGui::BeginTabItem("Game")) {
+            ImGui::Text("Camera X: %f", camera.x);
+            ImGui::Text("Camera Y: %f", camera.y);
+            ImGui::Text("Thing Position: %f, %f", thing.pos.x, thing.pos.y);
+            ImGui::Text("Thing Velocity: %f, %f", thing.vel.x, thing.vel.y);
+            ImGui::Text("Thing Accelleration: %f, %f", thing.accel.x, thing.accel.y);
+            ImGui::Text("Thing Grounded: %s", thing.on_ground ? "yes" : "no");
+            ImGui::Checkbox("Show Colliders", &show_colliders);
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Map")) {
+            ImGui::Text("Map width: %zu", map.width());
+            ImGui::Text("Map height: %zu", map.height());
+            ImGui::Text("Spawn X: %g", map.spawn().x);
+            ImGui::Text("Spawn Y: %g", map.spawn().y);
+            ImGui::Text("File path: %s", map.file_path().c_str());
+
+            ImGui::Spacing();
+            ImGui::Text("Load new map");
+
+            static char map_path[128] = {};
+            ImGui::InputText("##path", map_path, IM_ARRAYSIZE(map_path));
+            ImGui::SameLine();
+
+            if (ImGui::Button("Load")) {
+                if (!map.load_file(map_path)) {
+                    std::cout << "Failed to load map: " << map_path << std::endl;
+                    panic();
+                } else {
+                    thing.spawn(map.spawn());
+                    std::cout << "Loaded map: " << map_path << std::endl;
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
     ImGui::End();
 
     ImGui::Render();

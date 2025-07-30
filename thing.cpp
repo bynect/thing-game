@@ -107,11 +107,14 @@ void Thing::land()
     vel.y = 0.f;
 }
 
-void Thing::set_position(Vec2<float> pos)
+void Thing::spawn(Vec2<float> pos)
 {
     this->pos = pos;
     collider.rect.x = pos.x;
     collider.rect.y = pos.y;
+    vel = {0, 0};
+    accel = {0, 0};
+    on_ground = false;
 }
 
 void Thing::render(SDL_Renderer *renderer, const SDL_FRect &camera)
